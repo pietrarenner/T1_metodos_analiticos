@@ -1,0 +1,49 @@
+{
+    "queues": {
+      "Q1": {
+        "index": 0,
+        "servers": 1,
+        "capacity": 100001,
+        "minArrival": 2.0,
+        "maxArrival": 4.0,
+        "minService": 1.0,
+        "maxService": 2.0
+      },
+      "Q2": {
+        "index": 1,
+        "servers": 2,
+        "capacity": 5,
+        "minService": 4.0,
+        "maxService": 8.0
+      },
+      "Q3": {
+        "index": 2,
+        "servers": 2,
+        "capacity": 10,
+        "minService": 5.0,
+        "maxService": 15.0
+      }
+    },
+
+    "arrivals": {
+      "0": 2.0
+    },
+
+    "probabilities": {
+        "0": {
+            "1": 0.8,
+            "2": 0.2
+        },
+        "1": {
+            "-1": 0.2,
+            "0": 0.3,
+            "2": 0.5
+        },
+        "2": {
+            "-1": 0.3,
+            "1": 0.7
+        }
+    },
+
+  "rndnumbersPerSeed": 100000
+}  
