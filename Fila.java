@@ -106,7 +106,7 @@ public class Fila {
     }
 
     public void setTime(int pos, double val) {
-        this.times[pos] = val;
+        this.times[pos] += val;
     }
 
     public void in() {

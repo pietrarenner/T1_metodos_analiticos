@@ -15,12 +15,6 @@ public class T1 {
     private static ArrayList<Fila> listaDeFilas = new ArrayList<>();
     private static List<Evento> escalonador;
     private static double tempoGlobal;
-    // private static int capacityFila1 = 2;
-    // private static int capacityFila2 = 1;
-    // private static int qtdMaxServidores1 = 3;
-    // private static int qtdMaxServidores2 = 5;
-    private static int ultimoTamFila1;
-    private static int ultimoTamFila2;
     private static double ultimoTempo;
     
     public static void main(String[] args) {
@@ -35,9 +29,8 @@ public class T1 {
         map2.put(2, 0.5); // vem do json
         
         HashMap<Integer, Double> map3 = new HashMap<>();
-        map2.put(-1, 0.3); // vem do json
-        map2.put(1, 0.7); // vem do json
-
+        map3.put(-1, 0.3); // vem do json
+        map3.put(1, 0.7); // vem do json
 
         Fila fila1 = new Fila(1, 100001, 2, 4, 1, 2, map1, 0); // vem do json
         Fila fila2 = new Fila(2, 5, 0, 0, 4, 8, map2, 1); // vem do json
@@ -135,6 +128,7 @@ public class T1 {
         Fila filaDestino = filaOrigem;
         double sum = 0.0;
         double prob = NextRandom();
+        boolean isExit = false;
         
         if (filaOrigem.getCustomers() >= filaOrigem.getServer()) {
             for (Map.Entry<Integer, Double> entry : filaOrigem.getFilas().entrySet()) {
@@ -143,37 +137,41 @@ public class T1 {
                     if (entry.getKey() != -1) {
                         double tempoPassagem = tempoGlobal + calculaTempo(filaOrigem.getMinService(), filaOrigem.getMaxService());
                         escalonador.add(new Evento(tipo_evento.PASSAGEM, tempoPassagem, filaOrigem.getIndex()));
+                        filaDestino = listaDeFilas.get(entry.getKey()); // fila seguinte
                     }
                     else {
                         double tempoSaida = tempoGlobal + calculaTempo(filaOrigem.getMinService(), filaOrigem.getMaxService());
-                        escalonador.add(new Evento(tipo_evento.SAIDA, tempoSaida, entry.getKey()));
+                        escalonador.add(new Evento(tipo_evento.SAIDA, tempoSaida, filaOrigem.getIndex()));
+                        // ele vai sair, não deve ter fila destino 
+                        isExit = true;
                     }
-                    filaDestino = listaDeFilas.get(entry.getKey());
                     break;
                 }
             }
         }
-        if (filaDestino.getCustomers() < filaDestino.getCapacity()) {
-            filaDestino.in();
-            if (filaDestino.getCustomers() <= filaDestino.getServer()) {
-                for (Map.Entry<Integer, Double> entry : filaDestino.getFilas().entrySet()) {
-                    sum += entry.getValue();
-                    if (prob < sum) {
-                        if (entry.getKey() != -1) {
-                            double tempoPassagem = tempoGlobal + calculaTempo(filaDestino.getMinService(), filaDestino.getMaxService());
-                            escalonador.add(new Evento(tipo_evento.PASSAGEM, tempoPassagem, entry.getKey()));
+        if(!isExit) {
+            if (filaDestino.getCustomers() < filaDestino.getCapacity()) {
+                filaDestino.in();
+                if (filaDestino.getCustomers() <= filaDestino.getServer()) {
+                    for (Map.Entry<Integer, Double> entry : filaDestino.getFilas().entrySet()) {
+                        sum += entry.getValue();
+                        if (prob < sum) {
+                            if (entry.getKey() != -1) {
+                                double tempoPassagem = tempoGlobal + calculaTempo(filaDestino.getMinService(), filaDestino.getMaxService());
+                                escalonador.add(new Evento(tipo_evento.PASSAGEM, tempoPassagem, filaDestino.getIndex()));
+                            }
+                            else {
+                                double tempoSaida = tempoGlobal + calculaTempo(filaDestino.getMinService(), filaDestino.getMaxService());
+                                escalonador.add(new Evento(tipo_evento.SAIDA, tempoSaida, filaDestino.getIndex()));
+                            }
+                            break;
                         }
-                        else {
-                            double tempoSaida = tempoGlobal + calculaTempo(filaDestino.getMinService(), filaDestino.getMaxService());
-                            escalonador.add(new Evento(tipo_evento.SAIDA, tempoSaida, entry.getKey()));
-                        }
-                        break;
                     }
                 }
             }
-        }
-        else {
-            filaDestino.loss();
+            else {
+                filaDestino.loss();
+            }
         }
     }
     
@@ -188,6 +186,7 @@ public class T1 {
 
     private static void atualizarTempoEstadosFila() {
         double delta = tempoGlobal - ultimoTempo;
+        // System.out.println("delta: " + delta);
 
         for(Fila fila : listaDeFilas) {
             int ultimoTamFila = fila.getCustomers();
@@ -210,14 +209,14 @@ public class T1 {
             j++;
             totalPerdidos += fila.getLoss();
         }
-        System.out.println("Clientes Totais Perdidos: " + totalPerdidos);
+        // System.out.println("Clientes Totais Perdidos: " + totalPerdidos);
     
         for (int idx = 0; idx < listaDeFilas.size(); idx++) {
             Fila fila = listaDeFilas.get(idx);
             System.out.println("Distribuicao de Probabilidades dos Estados da Fila " + (idx + 1) + ":");
             double[] times = fila.getTimes();
             for (int i = 0; i < times.length; i++) {
-                System.out.printf("Fila %d estado %d: %.5f%%\n", idx + 1, i, (times[i] / tempoGlobal) * 100);
+                if (times[i] > 0) System.out.printf("Fila %d estado %d: %.5f%%\n", idx + 1, i, ((times[i] / tempoGlobal) * 100));
             }
         }
     }
