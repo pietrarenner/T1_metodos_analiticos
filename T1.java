@@ -13,8 +13,8 @@ public class T1 {
     private static final double semente = 7;
     private static double anterior = semente;
     private static ArrayList<Fila> listaDeFilas = new ArrayList<>();
-    private static Fila fila1;
-    private static Fila fila2;
+    //private static Fila fila1;
+    //private static Fila fila2;
     private static List<Evento> escalonador;
     private static double tempoGlobal;
     private static int capacityFila1 = 2;
@@ -32,23 +32,25 @@ public class T1 {
         map1.put(2, 0.2);
         
         HashMap<Integer, Double> map2 = new HashMap<>();
-        map2.put(-1, 0.2);
-        map2.put(0, 0.3);
-        map2.put(1, 0.5);
+        map2.put(-1, 0.2); // vem do json
+        map2.put(0, 0.3); // vem do json
+        map2.put(1, 0.5); // vem do json
 
 
 
-        fila1 = new Fila(qtdMaxServidores1, capacityFila1, 1, 4, 3, 4, map1);
-        fila2 = new Fila(qtdMaxServidores2, capacityFila2, 0, 0, 2, 3, map2);
+        Fila fila1 = new Fila(qtdMaxServidores1, capacityFila1, 1, 4, 3, 4, map1); // vem do json
+        Fila fila2 = new Fila(qtdMaxServidores2, capacityFila2, 0, 0, 2, 3, map2); // vem do json
         listaDeFilas.add(fila1);
         listaDeFilas.add(fila2);
         simular();
+
+        // minArrival = 0 significa q a fila nao recebe de fora
     }
     
     private static void simular() {
         escalonador = new ArrayList<>();
         
-        escalonador.add(new Evento(tipo_evento.CHEGADA, 2));
+        escalonador.add(new Evento(tipo_evento.CHEGADA, 2, 0)); // vem do json
         
         for (int i = 0; i < 100000; i++) {
             escalonador.sort(Comparator.comparingDouble(e -> e.tempo));
@@ -61,11 +63,11 @@ public class T1 {
             // System.out.printf("tam fila: %d\n", fila.size());
             
             if (evento.tipo == tipo_evento.CHEGADA) {
-                chegada();
+                chegada(listaDeFilas.get(evento.fila));
             } else if(evento.tipo == tipo_evento.SAIDA) {
-                saida1(); 
+                saida(listaDeFilas.get(evento.fila)); 
             } else if(evento.tipo == tipo_evento.PASSAGEM) {
-                passagem();
+                passagem(listaDeFilas.get(evento.fila));
             }
         }
         reportarResultados();
@@ -83,11 +85,11 @@ public class T1 {
                     if (prob < sum) {
                         if (entry.getKey() != -1) {
                             double tempoPassagem = tempoGlobal + calculaTempo(filaDestino.getMinService(), filaDestino.getMaxService());
-                            escalonador.add(new Evento(tipo_evento.PASSAGEM, tempoPassagem));
+                            escalonador.add(new Evento(tipo_evento.PASSAGEM, tempoPassagem, entry.getKey()));
                         }
                         else {
                             double tempoSaida = tempoGlobal + calculaTempo(filaDestino.getMinService(), filaDestino.getMaxService());
-                            escalonador.add(new Evento(tipo_evento.SAIDA, tempoSaida));
+                            escalonador.add(new Evento(tipo_evento.SAIDA, tempoSaida, entry.getKey()));
                         }
                         break;
                     }
@@ -98,65 +100,30 @@ public class T1 {
             // System.out.println("cliente perdido");
         }
         double tempoProxChegada = tempoGlobal + calculaTempo(filaDestino.getMinArrival(), filaDestino.getMaxArrival());
-        escalonador.add(new Evento(tipo_evento.CHEGADA, tempoProxChegada));
+        escalonador.add(new Evento(tipo_evento.CHEGADA, tempoProxChegada, 0));  // TODO: pegar o indice do json no ARRIVALS
         // System.out.printf("agendou proxima chegada para %.2f\n", tempoProxChegada);
     }
 
     private static void saida(Fila filaOrigem) {
-        filaOrigem.out();
+        filaOrigem.out(); // pessoa foi atendida
         double sum = 0.0;
         double prob = NextRandom();
 
-        if (filaOrigem.getCustomers() >= filaOrigem.getServer()) {
+        if (filaOrigem.getCustomers() >= filaOrigem.getServer()) { // 5 pessoas ainda não foram atendidas e temos 2 servidores 
             for (Map.Entry<Integer, Double> entry : filaOrigem.getFilas().entrySet()) {
                 sum += entry.getValue();
                 if (prob < sum) {
                     if (entry.getKey() != -1) {
-                        double tempoPassagem = tempoGlobal + calculaTempo(filaDestino.getMinService(), filaDestino.getMaxService());
-                        escalonador.add(new Evento(tipo_evento.PASSAGEM, tempoPassagem));
+                        double tempoPassagem = tempoGlobal + calculaTempo(filaOrigem.getMinService(), filaOrigem.getMaxService());
+                        escalonador.add(new Evento(tipo_evento.PASSAGEM, tempoPassagem, entry.getKey()));
                     }
                     else {
-                        double tempoSaida = tempoGlobal + calculaTempo(filaDestino.getMinService(), filaDestino.getMaxService());
-                        escalonador.add(new Evento(tipo_evento.SAIDA, tempoSaida));
+                        double tempoSaida = tempoGlobal + calculaTempo(filaOrigem.getMinService(), filaOrigem.getMaxService());
+                        escalonador.add(new Evento(tipo_evento.SAIDA, tempoSaida, entry.getKey()));
                     }
                     break;
                 }
             }
-
-            if(NextRandom() < 0.7) {
-                double tempoPassagem = tempoGlobal + calculaTempo(fila2.getMinService(), fila2.getMaxService());
-                escalonador.add(new Evento(tipo_evento.PASSAGEM, tempoPassagem));
-                // System.out.printf("agendou nova saida para %.2f\n", tempoSaida);
-            }
-            else {
-                double tempoSaida = tempoGlobal + calculaTempo(fila2.getMinService(), fila2.getMaxService());
-                escalonador.add(new Evento(tipo_evento.SAIDA1, tempoSaida));
-            }
-        }
-    }
-
-    private static void saida1() {
-        fila1.out();
-        if (fila1.getCustomers() >= fila1.getServer()) {
-            if(NextRandom() < 0.7) {
-                double tempoPassagem = tempoGlobal + calculaTempo(fila2.getMinService(), fila2.getMaxService());
-                escalonador.add(new Evento(tipo_evento.PASSAGEM, tempoPassagem));
-                // System.out.printf("agendou nova saida para %.2f\n", tempoSaida);
-            }
-            else {
-                double tempoSaida = tempoGlobal + calculaTempo(fila2.getMinService(), fila2.getMaxService());
-                escalonador.add(new Evento(tipo_evento.SAIDA1, tempoSaida));
-            }
-        }
-    }
-    
-    private static void saida2() {
-        // System.out.printf("saida no tempo %.2f\n", tempoGlobal);
-        fila2.out();
-        if (fila2.getCustomers() >= fila2.getServer()) {
-            double tempoSaida = tempoGlobal + calculaTempo(fila2.getMinService(), fila2.getMaxService());
-            escalonador.add(new Evento(tipo_evento.SAIDA2, tempoSaida));
-            // System.out.printf("agendou nova saida para %.2f\n", tempoSaida);
         }
     }
 
@@ -172,11 +139,11 @@ public class T1 {
                 if (prob < sum) {
                     if (entry.getKey() != -1) {
                         double tempoPassagem = tempoGlobal + calculaTempo(filaOrigem.getMinService(), filaOrigem.getMaxService());
-                        escalonador.add(new Evento(tipo_evento.PASSAGEM, tempoPassagem));
+                        escalonador.add(new Evento(tipo_evento.PASSAGEM, tempoPassagem, entry.getKey()));
                     }
                     else {
                         double tempoSaida = tempoGlobal + calculaTempo(filaOrigem.getMinService(), filaOrigem.getMaxService());
-                        escalonador.add(new Evento(tipo_evento.SAIDA, tempoSaida));
+                        escalonador.add(new Evento(tipo_evento.SAIDA, tempoSaida, entry.getKey()));
                     }
                     filaDestino = listaDeFilas.get(entry.getKey());
                     break;
@@ -191,17 +158,17 @@ public class T1 {
                     if (prob < sum) {
                         if (entry.getKey() != -1) {
                             double tempoPassagem = tempoGlobal + calculaTempo(filaDestino.getMinService(), filaDestino.getMaxService());
-                            escalonador.add(new Evento(tipo_evento.PASSAGEM, tempoPassagem));
+                            escalonador.add(new Evento(tipo_evento.PASSAGEM, tempoPassagem, entry.getKey()));
                         }
                         else {
                             double tempoSaida = tempoGlobal + calculaTempo(filaDestino.getMinService(), filaDestino.getMaxService());
-                            escalonador.add(new Evento(tipo_evento.SAIDA, tempoSaida));
+                            escalonador.add(new Evento(tipo_evento.SAIDA, tempoSaida, entry.getKey()));
                         }
                         break;
                     }
                 }
             }
-        } 
+        }
         else {
             filaDestino.loss();
         }
@@ -219,14 +186,12 @@ public class T1 {
     private static void atualizarTempoEstadosFila() {
         double delta = tempoGlobal - ultimoTempo;
 
-        ultimoTamFila1 = fila1.getCustomers();
-        ultimoTamFila2 = fila2.getCustomers();
+        for(Fila fila : listaDeFilas) {
+            int ultimoTamFila = fila.getCustomers();
 
-        if (ultimoTamFila1 >= 0) {
-            fila1.setTime(ultimoTamFila1, delta);
-        }
-        if (ultimoTamFila2 >= 0) {
-            fila2.setTime(ultimoTamFila2, delta);
+            if (ultimoTamFila >= 0 && ultimoTamFila <= fila.getCapacity()) {
+                fila.setTime(ultimoTamFila, delta);
+            }
         }
 
         ultimoTempo = tempoGlobal;
@@ -251,9 +216,11 @@ public class T1 {
 class Evento {
     tipo_evento tipo; // false para chegada, true para saída
     double tempo;
+    int fila;
     
-    public Evento(tipo_evento tipo, double tempo) {
+    public Evento(tipo_evento tipo, double tempo, int fila) {
         this.tipo = tipo;
         this.tempo = tempo;
+        this.fila = fila;
     }
 }
