@@ -2,7 +2,8 @@ import java.util.*;
 
 enum tipo_evento {
     CHEGADA,
-    SAIDA,
+    SAIDA1,
+    SAIDA2,
     PASSAGEM
 };
 
@@ -28,7 +29,7 @@ public class T1 {
         System.out.println("Simulacao G/G/1/5");
         fila1 = new Fila(qtdMaxServidores1, capacityFila1, 1, 4, 3, 4);
         fila2 = new Fila(qtdMaxServidores2, capacityFila2, 0, 0, 2, 3);
-        simular();       
+        simular();
     }
     
     private static void simular() {
@@ -48,8 +49,10 @@ public class T1 {
             
             if (evento.tipo == tipo_evento.CHEGADA) {
                 chegada();
-            } else if(evento.tipo == tipo_evento.SAIDA) {
-                saida();
+            } else if(evento.tipo == tipo_evento.SAIDA1) {
+                saida1(); 
+            } else if(evento.tipo == tipo_evento.SAIDA2) {
+                saida2(); 
             } else if(evento.tipo == tipo_evento.PASSAGEM) {
                 passagem();
             }
@@ -62,8 +65,14 @@ public class T1 {
         if (fila1.getCustomers() < fila1.getCapacity()) {
             fila1.in();
             if (fila1.getCustomers() <= fila1.getServer()) {
-                double tempoSaida = tempoGlobal + calculaTempo(fila1.getMinService(), fila1.getMaxService());
-                escalonador.add(new Evento(tipo_evento.SAIDA, tempoSaida));
+                if (NextRandom() < 0.7) {
+                    double tempoPassagem = tempoGlobal + calculaTempo(fila1.getMinService(), fila1.getMaxService());
+                    escalonador.add(new Evento(tipo_evento.PASSAGEM, tempoPassagem));
+                }
+                else {
+                    double tempoSaida = tempoGlobal + calculaTempo(fila1.getMinService(), fila1.getMaxService());
+                    escalonador.add(new Evento(tipo_evento.SAIDA1, tempoSaida));
+                }
                 // System.out.printf("agendou saida para %.2f\n", tempoSaida);
             }
         } else {
@@ -74,34 +83,52 @@ public class T1 {
         escalonador.add(new Evento(tipo_evento.CHEGADA, tempoProxChegada));
         // System.out.printf("agendou proxima chegada para %.2f\n", tempoProxChegada);
     }
-    
-    private static void saida() {
-        // System.out.printf("saida no tempo %.2f\n", tempoGlobal);
-        if (fila1.getCustomers() > 0) {
-            fila2.out();
-            if (fila2.getCustomers() >= fila2.getServer()) {
-                double tempoSaida = tempoGlobal + calculaTempo(fila2.getMinService(), fila2.getMaxService());
-                escalonador.add(new Evento(tipo_evento.SAIDA, tempoSaida));
+
+    private static void saida1() {
+        fila1.out();
+        if (fila1.getCustomers() >= fila1.getServer()) {
+            if(NextRandom() < 0.7) {
+                double tempoPassagem = tempoGlobal + calculaTempo(fila2.getMinService(), fila2.getMaxService());
+                escalonador.add(new Evento(tipo_evento.PASSAGEM, tempoPassagem));
                 // System.out.printf("agendou nova saida para %.2f\n", tempoSaida);
             }
+            else {
+                double tempoSaida = tempoGlobal + calculaTempo(fila2.getMinService(), fila2.getMaxService());
+                escalonador.add(new Evento(tipo_evento.SAIDA1, tempoSaida));
+            }
+        }
+    }
+    
+    private static void saida2() {
+        // System.out.printf("saida no tempo %.2f\n", tempoGlobal);
+        fila2.out();
+        if (fila2.getCustomers() >= fila2.getServer()) {
+            double tempoSaida = tempoGlobal + calculaTempo(fila2.getMinService(), fila2.getMaxService());
+            escalonador.add(new Evento(tipo_evento.SAIDA2, tempoSaida));
+            // System.out.printf("agendou nova saida para %.2f\n", tempoSaida);
         }
     }
 
     private static void passagem() {
         fila1.out();
-        if (fila1.getCustomers() >= fila1.getServer()) {
-            double tempoSaida = tempoGlobal + calculaTempo(fila1.getMinService(), fila1.getMaxService());
-            escalonador.add(new Evento(tipo_evento.SAIDA, tempoSaida));
-        }
         
+        if (fila1.getCustomers() >= fila1.getServer()) {
+            if (NextRandom() < 0.7) {
+                double tempoPassagem = tempoGlobal + calculaTempo(fila1.getMinService(), fila1.getMaxService());
+                escalonador.add(new Evento(tipo_evento.PASSAGEM, tempoPassagem));
+            }
+            else {
+                double tempoSaida = tempoGlobal + calculaTempo(fila1.getMinService(), fila1.getMaxService());
+                escalonador.add(new Evento(tipo_evento.SAIDA1, tempoSaida));
+            }
+        }
         if (fila2.getCustomers() < fila2.getCapacity()) {
             fila2.in();
             if (fila2.getCustomers() <= fila2.getServer()) {
                 double tempoSaida = tempoGlobal + calculaTempo(fila2.getMinService(), fila2.getMaxService());
-                escalonador.add(new Evento(tipo_evento.SAIDA, tempoSaida));
+                escalonador.add(new Evento(tipo_evento.SAIDA2, tempoSaida));
             }
-        }
-
+        } 
         else {
             fila2.loss();
         }
@@ -109,7 +136,7 @@ public class T1 {
     
     private static double calculaTempo(double a, double b) {
         return a + ((b - a) * NextRandom());
-    }   
+    }
     
     private static double NextRandom() {
         anterior = ((a * anterior) + c) % M;
@@ -145,7 +172,7 @@ public class T1 {
         for (int i = 0; i < timesFila2.length; i++) {
             System.out.printf("Fila 1 %d: %.5f%%\n", i, (timesFila2[i] / tempoGlobal)*100);
         }
-    }   
+    }
 }
 
 class Evento {
