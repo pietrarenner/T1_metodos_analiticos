@@ -13,14 +13,12 @@ public class T1 {
     private static final double semente = 7;
     private static double anterior = semente;
     private static ArrayList<Fila> listaDeFilas = new ArrayList<>();
-    //private static Fila fila1;
-    //private static Fila fila2;
     private static List<Evento> escalonador;
     private static double tempoGlobal;
-    private static int capacityFila1 = 2;
-    private static int capacityFila2 = 1;
-    private static int qtdMaxServidores1 = 3;
-    private static int qtdMaxServidores2 = 5;
+    // private static int capacityFila1 = 2;
+    // private static int capacityFila2 = 1;
+    // private static int qtdMaxServidores1 = 3;
+    // private static int qtdMaxServidores2 = 5;
     private static int ultimoTamFila1;
     private static int ultimoTamFila2;
     private static double ultimoTempo;
@@ -34,14 +32,19 @@ public class T1 {
         HashMap<Integer, Double> map2 = new HashMap<>();
         map2.put(-1, 0.2); // vem do json
         map2.put(0, 0.3); // vem do json
-        map2.put(1, 0.5); // vem do json
+        map2.put(2, 0.5); // vem do json
+        
+        HashMap<Integer, Double> map3 = new HashMap<>();
+        map2.put(-1, 0.3); // vem do json
+        map2.put(1, 0.7); // vem do json
 
 
-
-        Fila fila1 = new Fila(qtdMaxServidores1, capacityFila1, 1, 4, 3, 4, map1); // vem do json
-        Fila fila2 = new Fila(qtdMaxServidores2, capacityFila2, 0, 0, 2, 3, map2); // vem do json
+        Fila fila1 = new Fila(1, 100001, 2, 4, 1, 2, map1, 0); // vem do json
+        Fila fila2 = new Fila(2, 5, 0, 0, 4, 8, map2, 1); // vem do json
+        Fila fila3 = new Fila(2, 10, 0, 0, 5, 15, map3, 2); // vem do json
         listaDeFilas.add(fila1);
         listaDeFilas.add(fila2);
+        listaDeFilas.add(fila3);
         simular();
 
         // minArrival = 0 significa q a fila nao recebe de fora
@@ -85,11 +88,11 @@ public class T1 {
                     if (prob < sum) {
                         if (entry.getKey() != -1) {
                             double tempoPassagem = tempoGlobal + calculaTempo(filaDestino.getMinService(), filaDestino.getMaxService());
-                            escalonador.add(new Evento(tipo_evento.PASSAGEM, tempoPassagem, entry.getKey()));
+                            escalonador.add(new Evento(tipo_evento.PASSAGEM, tempoPassagem, filaDestino.getIndex()));
                         }
                         else {
                             double tempoSaida = tempoGlobal + calculaTempo(filaDestino.getMinService(), filaDestino.getMaxService());
-                            escalonador.add(new Evento(tipo_evento.SAIDA, tempoSaida, entry.getKey()));
+                            escalonador.add(new Evento(tipo_evento.SAIDA, tempoSaida, filaDestino.getIndex()));
                         }
                         break;
                     }
@@ -115,11 +118,11 @@ public class T1 {
                 if (prob < sum) {
                     if (entry.getKey() != -1) {
                         double tempoPassagem = tempoGlobal + calculaTempo(filaOrigem.getMinService(), filaOrigem.getMaxService());
-                        escalonador.add(new Evento(tipo_evento.PASSAGEM, tempoPassagem, entry.getKey()));
+                        escalonador.add(new Evento(tipo_evento.PASSAGEM, tempoPassagem, filaOrigem.getIndex()));
                     }
                     else {
                         double tempoSaida = tempoGlobal + calculaTempo(filaOrigem.getMinService(), filaOrigem.getMaxService());
-                        escalonador.add(new Evento(tipo_evento.SAIDA, tempoSaida, entry.getKey()));
+                        escalonador.add(new Evento(tipo_evento.SAIDA, tempoSaida, filaOrigem.getIndex()));
                     }
                     break;
                 }
@@ -139,7 +142,7 @@ public class T1 {
                 if (prob < sum) {
                     if (entry.getKey() != -1) {
                         double tempoPassagem = tempoGlobal + calculaTempo(filaOrigem.getMinService(), filaOrigem.getMaxService());
-                        escalonador.add(new Evento(tipo_evento.PASSAGEM, tempoPassagem, entry.getKey()));
+                        escalonador.add(new Evento(tipo_evento.PASSAGEM, tempoPassagem, filaOrigem.getIndex()));
                     }
                     else {
                         double tempoSaida = tempoGlobal + calculaTempo(filaOrigem.getMinService(), filaOrigem.getMaxService());
@@ -199,22 +202,29 @@ public class T1 {
 
     private static void reportarResultados() {
         System.out.println("Tempo Global da Simulacao: " + tempoGlobal);
-        System.out.println("Clientes Totais Perdidos: " + (fila1.getLoss() + fila2.getLoss()));
-        System.out.println("Distribuicao de Probabilidades dos Estados da Fila 1:");
-        double [] timesFila1 = fila1.getTimes();
-        for (int i = 0; i < timesFila1.length; i++) {
-            System.out.printf("Fila 1 %d: %.5f%%\n", i, (timesFila1[i] / tempoGlobal)*100);
+        
+        int totalPerdidos = 0;
+        int j = 1;
+        for (Fila fila : listaDeFilas) {
+            System.out.println("Clientes perdidos na fila " + j + ": " + fila.getLoss());
+            j++;
+            totalPerdidos += fila.getLoss();
         }
-        System.out.println("Distribuicao de Probabilidades dos Estados da Fila 2:");
-        double [] timesFila2 = fila2.getTimes();
-        for (int i = 0; i < timesFila2.length; i++) {
-            System.out.printf("Fila 1 %d: %.5f%%\n", i, (timesFila2[i] / tempoGlobal)*100);
+        System.out.println("Clientes Totais Perdidos: " + totalPerdidos);
+    
+        for (int idx = 0; idx < listaDeFilas.size(); idx++) {
+            Fila fila = listaDeFilas.get(idx);
+            System.out.println("Distribuicao de Probabilidades dos Estados da Fila " + (idx + 1) + ":");
+            double[] times = fila.getTimes();
+            for (int i = 0; i < times.length; i++) {
+                System.out.printf("Fila %d estado %d: %.5f%%\n", idx + 1, i, (times[i] / tempoGlobal) * 100);
+            }
         }
     }
 }
 
 class Evento {
-    tipo_evento tipo; // false para chegada, true para saída
+    tipo_evento tipo;
     double tempo;
     int fila;
     

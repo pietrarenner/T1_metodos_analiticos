@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Fila {
+    private int index;
     private int server;
     private int capacity;
     private double minArrival;
@@ -14,7 +15,8 @@ public class Fila {
     private HashMap<Integer, Double> possiveisProximasFilas;
 
     public Fila(int server, int capacity, double minArrival, double maxArrival,
-                double minService, double maxService, HashMap<Integer, Double> possiveisProximasFilas) {
+                double minService, double maxService, HashMap<Integer, Double> possiveisProximasFilas, int index) {
+        this.index = index;
         this.server = server;
         this.capacity = capacity;
         this.minArrival = minArrival;
@@ -29,6 +31,10 @@ public class Fila {
 
     public HashMap<Integer, Double> getFilas() {
         return possiveisProximasFilas;
+    }
+
+    public int getIndex() {
+        return index;
     }
 
     public int getServer() {
