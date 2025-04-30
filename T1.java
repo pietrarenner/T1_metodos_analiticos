@@ -9,7 +9,7 @@ enum tipo_evento {
 public class T1 {
     private static Gerador_Numeros_PeseudoAleatorios gerador = new Gerador_Numeros_PeseudoAleatorios();
     private static ArrayList<Fila> listaDeFilas = new ArrayList<>();
-    private static List<Evento> escalonador;
+    private static Escalonador escalonador = new Escalonador();
     private static double tempoGlobal;
     private static double ultimoTempo;
     private static int numIteracoes;
@@ -78,13 +78,13 @@ public class T1 {
     }
 
     private static void simular(double primeiraChegada) {
-        escalonador = new ArrayList<>();
+        // escalonador = new ArrayList<>();
 
-        escalonador.add(new Evento(tipo_evento.CHEGADA, primeiraChegada, 0)); // vem do json
+        escalonador.adicionarEvento(new Evento(tipo_evento.CHEGADA, primeiraChegada, 0)); // vem do json
 
         for (int i = 0; i < numIteracoes; i++) {
-            escalonador.sort(Comparator.comparingDouble(e -> e.tempo));
-            Evento evento = escalonador.remove(0);
+            // escalonador.sort(Comparator.comparingDouble(e -> e.tempo));
+            Evento evento = escalonador.removerEvento();
 
             tempoGlobal = evento.tempo;
             atualizarTempoEstadosFila();
@@ -117,11 +117,11 @@ public class T1 {
                         if (entry.getKey() != -1) {
                             double tempoPassagem = tempoGlobal
                                     + calculaTempo(filaDestino.getMinService(), filaDestino.getMaxService());
-                            escalonador.add(new Evento(tipo_evento.PASSAGEM, tempoPassagem, filaDestino.getIndex()));
+                            escalonador.adicionarEvento(new Evento(tipo_evento.PASSAGEM, tempoPassagem, filaDestino.getIndex()));
                         } else {
                             double tempoSaida = tempoGlobal
                                     + calculaTempo(filaDestino.getMinService(), filaDestino.getMaxService());
-                            escalonador.add(new Evento(tipo_evento.SAIDA, tempoSaida, filaDestino.getIndex()));
+                            escalonador.adicionarEvento(new Evento(tipo_evento.SAIDA, tempoSaida, filaDestino.getIndex()));
                         }
                         break;
                     }
@@ -132,7 +132,7 @@ public class T1 {
             // System.out.println("cliente perdido");
         }
         double tempoProxChegada = tempoGlobal + calculaTempo(filaDestino.getMinArrival(), filaDestino.getMaxArrival());
-        escalonador.add(new Evento(tipo_evento.CHEGADA, tempoProxChegada, 0)); // TODO: pegar o indice do json no
+        escalonador.adicionarEvento(new Evento(tipo_evento.CHEGADA, tempoProxChegada, 0)); // TODO: pegar o indice do json no
                                                                                // ARRIVALS
         // System.out.printf("agendou proxima chegada para %.2f\n", tempoProxChegada);
     }
@@ -150,11 +150,11 @@ public class T1 {
                     if (entry.getKey() != -1) {
                         double tempoPassagem = tempoGlobal
                                 + calculaTempo(filaOrigem.getMinService(), filaOrigem.getMaxService());
-                        escalonador.add(new Evento(tipo_evento.PASSAGEM, tempoPassagem, filaOrigem.getIndex()));
+                        escalonador.adicionarEvento(new Evento(tipo_evento.PASSAGEM, tempoPassagem, filaOrigem.getIndex()));
                     } else {
                         double tempoSaida = tempoGlobal
                                 + calculaTempo(filaOrigem.getMinService(), filaOrigem.getMaxService());
-                        escalonador.add(new Evento(tipo_evento.SAIDA, tempoSaida, filaOrigem.getIndex()));
+                        escalonador.adicionarEvento(new Evento(tipo_evento.SAIDA, tempoSaida, filaOrigem.getIndex()));
                     }
                     break;
                 }
@@ -176,12 +176,12 @@ public class T1 {
                     if (entry.getKey() != -1) {
                         double tempoPassagem = tempoGlobal
                                 + calculaTempo(filaOrigem.getMinService(), filaOrigem.getMaxService());
-                        escalonador.add(new Evento(tipo_evento.PASSAGEM, tempoPassagem, filaOrigem.getIndex()));
+                        escalonador.adicionarEvento(new Evento(tipo_evento.PASSAGEM, tempoPassagem, filaOrigem.getIndex()));
                         filaDestino = listaDeFilas.get(entry.getKey()); // fila seguinte
                     }
                     else {
                         double tempoSaida = tempoGlobal + calculaTempo(filaOrigem.getMinService(), filaOrigem.getMaxService());
-                        escalonador.add(new Evento(tipo_evento.SAIDA, tempoSaida, filaOrigem.getIndex()));
+                        escalonador.adicionarEvento(new Evento(tipo_evento.SAIDA, tempoSaida, filaOrigem.getIndex()));
                         // ele vai sair, não deve ter fila destino 
                         isExit = true;
                     }
@@ -198,11 +198,11 @@ public class T1 {
                         if (prob < sum) {
                             if (entry.getKey() != -1) {
                                 double tempoPassagem = tempoGlobal + calculaTempo(filaDestino.getMinService(), filaDestino.getMaxService());
-                                escalonador.add(new Evento(tipo_evento.PASSAGEM, tempoPassagem, filaDestino.getIndex()));
+                                escalonador.adicionarEvento(new Evento(tipo_evento.PASSAGEM, tempoPassagem, filaDestino.getIndex()));
                             }
                             else {
                                 double tempoSaida = tempoGlobal + calculaTempo(filaDestino.getMinService(), filaDestino.getMaxService());
-                                escalonador.add(new Evento(tipo_evento.SAIDA, tempoSaida, filaDestino.getIndex()));
+                                escalonador.adicionarEvento(new Evento(tipo_evento.SAIDA, tempoSaida, filaDestino.getIndex()));
                             }
                             break;
                         }
