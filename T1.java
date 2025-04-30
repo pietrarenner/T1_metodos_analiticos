@@ -7,11 +7,7 @@ enum tipo_evento {
 };
 
 public class T1 {
-    private static final double M = 153764;
-    private static final double a = 4;
-    private static final double c = 4;
-    private static final double semente = 7;
-    private static double anterior = semente;
+    private static Gerador_Numeros_PeseudoAleatorios gerador = new Gerador_Numeros_PeseudoAleatorios();
     private static ArrayList<Fila> listaDeFilas = new ArrayList<>();
     private static List<Evento> escalonador;
     private static double tempoGlobal;
@@ -114,7 +110,7 @@ public class T1 {
             filaDestino.in();
             if (filaDestino.getCustomers() <= filaDestino.getServer()) {
                 double sum = 0.0;
-                double prob = NextRandom();
+                double prob = gerador.NextRandom();
                 for (Map.Entry<Integer, Double> entry : filaDestino.getFilas().entrySet()) {
                     sum += entry.getValue();
                     if (prob < sum) {
@@ -144,7 +140,7 @@ public class T1 {
     private static void saida(Fila filaOrigem) {
         filaOrigem.out(); // pessoa foi atendida
         double sum = 0.0;
-        double prob = NextRandom();
+        double prob = gerador.NextRandom();
 
         if (filaOrigem.getCustomers() >= filaOrigem.getServer()) { // 5 pessoas ainda não foram atendidas e temos 2
                                                                    // servidores
@@ -170,7 +166,7 @@ public class T1 {
         filaOrigem.out();
         Fila filaDestino = filaOrigem;
         double sum = 0.0;
-        double prob = NextRandom();
+        double prob = gerador.NextRandom();
         boolean isExit = false;
         
         if (filaOrigem.getCustomers() >= filaOrigem.getServer()) {
@@ -220,13 +216,13 @@ public class T1 {
     }
 
     private static double calculaTempo(double a, double b) {
-        return a + ((b - a) * NextRandom());
+        return a + ((b - a) * gerador.NextRandom());
     }
 
-    private static double NextRandom() {
-        anterior = ((a * anterior) + c) % M;
-        return anterior / M;
-    }
+    // private static double NextRandom() {
+    //     anterior = ((a * anterior) + c) % M;
+    //     return anterior / M;
+    // }
 
     private static void atualizarTempoEstadosFila() {
         double delta = tempoGlobal - ultimoTempo;
