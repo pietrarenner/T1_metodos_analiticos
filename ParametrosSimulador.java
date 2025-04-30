@@ -166,18 +166,7 @@ public class ParametrosSimulador {
             String content = new String(Files.readAllBytes(Paths.get("modelo.json")));
             ParametrosSimulador parser = new ParametrosSimulador();
             Object parsed = parser.parse(content);
-
-            // System.out.println(parsed);
-
             Map<String, Object> jsonMap = (Map<String, Object>) parsed;
-            // System.out.println("Name: " + jsonMap.get("name"));
-            // Map<String, Object> location = (Map<String, Object>) jsonMap.get("location");
-            // String city = (String) location.get("city");
-
-            // String city = (String) ((Map<String, Object>) ((Map<String, Object>)
-            // parsed).get("location")).get("city");
-            // System.out.println(city);
-
             return jsonMap;
         } catch (Exception e) {
             e.printStackTrace();

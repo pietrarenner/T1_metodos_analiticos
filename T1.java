@@ -1,5 +1,8 @@
 import java.util.*;
 
+/*
+ * para rodar o simulador adicione as informações de cada fila no arquivo modelo.json
+ */
 public class T1 {
     private static Gerador_Numeros_PeseudoAleatorios gerador = new Gerador_Numeros_PeseudoAleatorios();
     private static ArrayList<Fila> listaDeFilas = new ArrayList<>();
@@ -63,29 +66,19 @@ public class T1 {
             }
         }
 
-        System.out.println("Simulacao G/G/1/5");
         Map<String, Double> chegada = (Map<String, Double>) jsonContent.get("arrivals");
         double primeiraChegada = (double) chegada.get("0");
         simular(primeiraChegada);
-
-        // minArrival = 0 significa q a fila nao recebe de fora
     }
 
     private static void simular(double primeiraChegada) {
-        // escalonador = new ArrayList<>();
-
         escalonador.adicionarEvento(new Evento(tipo_evento.CHEGADA, primeiraChegada, 0)); // vem do json
 
         for (int i = 0; i < numIteracoes; i++) {
-            // escalonador.sort(Comparator.comparingDouble(e -> e.tempo));
             Evento evento = escalonador.removerEvento();
 
             tempoGlobal = evento.tempo;
             atualizarTempoEstadosFila();
-
-            // System.out.printf("evento: %s no tempo %.2f\n", evento.tipo ? "saida" :
-            // "chegada", evento.tempo);
-            // System.out.printf("tam fila: %d\n", fila.size());
 
             if (evento.tipo == tipo_evento.CHEGADA) {
                 chegada(listaDeFilas.get(evento.fila));
@@ -98,8 +91,7 @@ public class T1 {
         reportarResultados();
     }
 
-    private static void chegada(Fila filaDestino) { // no nosso caso sempre a fila 1
-        // System.out.printf("chegada no tempo %.2f\n", tempoGlobal);
+    private static void chegada(Fila filaDestino) { 
         if (filaDestino.getCustomers() < filaDestino.getCapacity()) {
             filaDestino.in();
             if (filaDestino.getCustomers() <= filaDestino.getServer()) {
@@ -123,21 +115,17 @@ public class T1 {
             }
         } else {
             filaDestino.loss();
-            // System.out.println("cliente perdido");
         }
         double tempoProxChegada = tempoGlobal + calculaTempo(filaDestino.getMinArrival(), filaDestino.getMaxArrival());
-        escalonador.adicionarEvento(new Evento(tipo_evento.CHEGADA, tempoProxChegada, 0)); // TODO: pegar o indice do json no
-                                                                               // ARRIVALS
-        // System.out.printf("agendou proxima chegada para %.2f\n", tempoProxChegada);
+        escalonador.adicionarEvento(new Evento(tipo_evento.CHEGADA, tempoProxChegada, 0)); 
     }
 
     private static void saida(Fila filaOrigem) {
-        filaOrigem.out(); // pessoa foi atendida
+        filaOrigem.out(); 
         double sum = 0.0;
         double prob = gerador.NextRandom();
 
-        if (filaOrigem.getCustomers() >= filaOrigem.getServer()) { // 5 pessoas ainda não foram atendidas e temos 2
-                                                                   // servidores
+        if (filaOrigem.getCustomers() >= filaOrigem.getServer()) { 
             for (Map.Entry<Integer, Double> entry : filaOrigem.getFilas().entrySet()) {
                 sum += entry.getValue();
                 if (prob < sum) {
@@ -171,12 +159,11 @@ public class T1 {
                         double tempoPassagem = tempoGlobal
                                 + calculaTempo(filaOrigem.getMinService(), filaOrigem.getMaxService());
                         escalonador.adicionarEvento(new Evento(tipo_evento.PASSAGEM, tempoPassagem, filaOrigem.getIndex()));
-                        filaDestino = listaDeFilas.get(entry.getKey()); // fila seguinte
+                        filaDestino = listaDeFilas.get(entry.getKey()); 
                     }
                     else {
                         double tempoSaida = tempoGlobal + calculaTempo(filaOrigem.getMinService(), filaOrigem.getMaxService());
                         escalonador.adicionarEvento(new Evento(tipo_evento.SAIDA, tempoSaida, filaOrigem.getIndex()));
-                        // ele vai sair, não deve ter fila destino 
                         isExit = true;
                     }
                     break;
@@ -213,14 +200,8 @@ public class T1 {
         return a + ((b - a) * gerador.NextRandom());
     }
 
-    // private static double NextRandom() {
-    //     anterior = ((a * anterior) + c) % M;
-    //     return anterior / M;
-    // }
-
     private static void atualizarTempoEstadosFila() {
         double delta = tempoGlobal - ultimoTempo;
-        // System.out.println("delta: " + delta);
 
         for (Fila fila : listaDeFilas) {
             int ultimoTamFila = fila.getCustomers();
@@ -255,15 +236,3 @@ public class T1 {
         }
     }
 }
-
-// class Evento {
-//     tipo_evento tipo;
-//     double tempo;
-//     int fila;
-
-//     public Evento(tipo_evento tipo, double tempo, int fila) {
-//         this.tipo = tipo;
-//         this.tempo = tempo;
-//         this.fila = fila;
-//     }
-// }
