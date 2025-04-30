@@ -1,11 +1,5 @@
 import java.util.*;
 
-enum tipo_evento {
-    CHEGADA,
-    SAIDA,
-    PASSAGEM
-};
-
 public class T1 {
     private static Gerador_Numeros_PeseudoAleatorios gerador = new Gerador_Numeros_PeseudoAleatorios();
     private static ArrayList<Fila> listaDeFilas = new ArrayList<>();
@@ -262,14 +256,14 @@ public class T1 {
     }
 }
 
-class Evento {
-    tipo_evento tipo;
-    double tempo;
-    int fila;
+// class Evento {
+//     tipo_evento tipo;
+//     double tempo;
+//     int fila;
 
-    public Evento(tipo_evento tipo, double tempo, int fila) {
-        this.tipo = tipo;
-        this.tempo = tempo;
-        this.fila = fila;
-    }
-}
+//     public Evento(tipo_evento tipo, double tempo, int fila) {
+//         this.tipo = tipo;
+//         this.tempo = tempo;
+//         this.fila = fila;
+//     }
+// }
