@@ -74,25 +74,6 @@ public class T1 {
         }
 
         System.out.println("Simulacao G/G/1/5");
-        // HashMap<Integer, Double> map1 = new HashMap<>();
-        // map1.put(1, 0.8);
-        // map1.put(2, 0.2);
-
-        // HashMap<Integer, Double> map2 = new HashMap<>();
-        // map2.put(-1, 0.2); // vem do json
-        // map2.put(0, 0.3); // vem do json
-        // map2.put(2, 0.5); // vem do json
-
-        // HashMap<Integer, Double> map3 = new HashMap<>();
-        // map2.put(-1, 0.3); // vem do json
-        // map2.put(1, 0.7); // vem do json
-
-        // Fila fila1 = new Fila(1, 100001, 2, 4, 1, 2, map1, 0); // vem do json
-        // Fila fila2 = new Fila(2, 5, 0, 0, 4, 8, map2, 1); // vem do json
-        // Fila fila3 = new Fila(2, 10, 0, 0, 5, 15, map3, 2); // vem do json
-        // listaDeFilas.add(fila1);
-        // listaDeFilas.add(fila2);
-        // listaDeFilas.add(fila3);
         Map<String, Double> chegada = (Map<String, Double>) jsonContent.get("arrivals");
         double primeiraChegada = (double) chegada.get("0");
         simular(primeiraChegada);
